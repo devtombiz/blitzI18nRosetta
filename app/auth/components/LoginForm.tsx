@@ -3,6 +3,8 @@ import { LabeledTextField } from "app/core/components/LabeledTextField"
 import { Form, FORM_ERROR } from "app/core/components/Form"
 import login from "app/auth/mutations/login"
 import { Login } from "app/auth/validations"
+import { useI18n, I18nProps } from "next-rosetta"
+import type { MyLocale } from "app/core/i18n"
 
 type LoginFormProps = {
   onSuccess?: () => void
@@ -10,13 +12,14 @@ type LoginFormProps = {
 
 export const LoginForm = (props: LoginFormProps) => {
   const [loginMutation] = useMutation(login)
+  const { t } = useI18n<MyLocale>()
 
   return (
     <div>
-      <h1>Login</h1>
+      <h1>{t("loginPage.login")}</h1>
 
       <Form
-        submitText="Login"
+        submitText={t("loginPage.login") as string | undefined}
         schema={Login}
         initialValues={{ email: "", password: "" }}
         onSubmit={async (values) => {
@@ -25,27 +28,31 @@ export const LoginForm = (props: LoginFormProps) => {
             props.onSuccess?.()
           } catch (error: any) {
             if (error instanceof AuthenticationError) {
-              return { [FORM_ERROR]: "Sorry, those credentials are invalid" }
+              return { [FORM_ERROR]: t("loginPage.credentialError") }
             } else {
               return {
-                [FORM_ERROR]:
-                  "Sorry, we had an unexpected error. Please try again. - " + error.toString(),
+                [FORM_ERROR]: t("loginPage.unexpectedError", { message: error.toString() }),
               }
             }
           }
         }}
       >
-        <LabeledTextField name="email" label="Email" placeholder="Email" />
-        <LabeledTextField name="password" label="Password" placeholder="Password" type="password" />
+        <LabeledTextField name="email" label={t("loginPage.email") as any} placeholder="Email" />
+        <LabeledTextField
+          name="password"
+          label={t("loginPage.password") as any}
+          placeholder="Password"
+          type="password"
+        />
         <div>
           <Link href={Routes.ForgotPasswordPage()}>
-            <a>Forgot your password?</a>
+            <a>{t("loginPage.forgotPassword")}</a>
           </Link>
         </div>
       </Form>
 
       <div style={{ marginTop: "1rem" }}>
-        Or <Link href={Routes.SignupPage()}>Sign Up</Link>
+        {t("loginPage.Or")} <Link href={Routes.SignupPage()}>{t("loginPage.signUp")}</Link>
       </div>
     </div>
   )
